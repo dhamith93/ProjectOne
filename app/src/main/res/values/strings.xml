@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">ProjectOne</string>
+    <string name="learn_more"><a href="https://www.google.com">Learn more about ProjectOne</a></string>
+</resources>
