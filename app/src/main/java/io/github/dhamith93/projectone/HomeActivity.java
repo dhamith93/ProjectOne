@@ -8,25 +8,40 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomappbar.BottomAppBar;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import androidx.annotation.NonNull;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class HomeActivity extends AppCompatActivity {
 
     private int selectedTabIndex;
+    private String currentUid;
     private Intent welcomeIntent;
+
+    private DatabaseReference userDatabase;
+    private DatabaseReference projectsDatabase;
+    private JSONArray projectArray;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +53,7 @@ public class HomeActivity extends AppCompatActivity {
         welcomeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
         selectedTabIndex = 0;
+        projectArray = new JSONArray();
 
         ViewPager viewPager = findViewById(R.id.tab_pager);
         FractionsAdapter fractionsAdapter = new FractionsAdapter(getSupportFragmentManager());
@@ -48,7 +64,10 @@ public class HomeActivity extends AppCompatActivity {
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
-            public void onTabSelected(TabLayout.Tab tab) { selectedTabIndex = tab.getPosition(); }
+            public void onTabSelected(TabLayout.Tab tab) {
+                selectedTabIndex = tab.getPosition();
+                ((BottomAppBar) findViewById(R.id.bottom_app_bar)).setVisibility(View.VISIBLE);
+            }
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) { }
@@ -56,6 +75,52 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onTabReselected(TabLayout.Tab tab) { }
         });
+
+        currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        projectsDatabase = FirebaseDatabase
+                .getInstance()
+                .getReference()
+                .child("projects");
+
+
+        userDatabase = FirebaseDatabase
+                .getInstance()
+                .getReference()
+                .child("users")
+                .child(currentUid);
+        userDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds : dataSnapshot.child("projects").getChildren()) {
+                    projectsDatabase.child(ds.getKey()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            try {
+                                JSONObject projectObj = new JSONObject(dataSnapshot.getValue().toString());
+                                projectArray.put(projectObj);
+                            } catch (Exception ex) {
+                                Log.d("PARSE ERROR", ex.getMessage());
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+
+                    Log.d("JSON ARRAY", projectArray.toString());
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                showSnackBar(databaseError.getMessage());
+            }
+        });
+
+
 
         (findViewById(R.id.fab)).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,11 +164,6 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_settings) {
-            // open settings layout
-            Toast.makeText(this, "Hello, World!", Toast.LENGTH_LONG).show();
-        }
-
         if (item.getItemId() == R.id.action_log_out) {
             FirebaseAuth.getInstance().signOut();
 
@@ -124,5 +184,13 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         return true;
+    }
+
+    private void showSnackBar(String msg) {
+        Snackbar.make(
+                findViewById(R.id.homeCoordinatorLayout),
+                msg,
+                Snackbar.LENGTH_LONG
+        ).show();
     }
 }

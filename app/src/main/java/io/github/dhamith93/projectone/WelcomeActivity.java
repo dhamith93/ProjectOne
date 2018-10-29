@@ -4,6 +4,7 @@ import android.content.Intent;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -15,6 +16,8 @@ import okhttp3.Response;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -30,20 +33,27 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GithubAuthProvider;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.HashMap;
 
 public class WelcomeActivity extends AppCompatActivity {
 
     private Intent homeIntent;
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
-    private FirebaseUser currentUser;
+    private DatabaseReference firebaseDatabase;
 
     private static final int RC_SIGN_IN = 9001;
     private static final String REDIRECT_URI_CALLABACK = "local://github.auth";
+    private boolean isAuthenticating;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,17 +72,23 @@ public class WelcomeActivity extends AppCompatActivity {
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
+        isAuthenticating = false;
+
         (findViewById(R.id.btnGoogleSignIn)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                signInWithGoogle();
+                if (!isAuthenticating) {
+                    signInWithGoogle();
+                }
             }
         });
 
         (findViewById(R.id.btnGitHubSignIn)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                signInWithGitHub();
+                if (!isAuthenticating) {
+                    signInWithGitHub();
+                }
             }
         });
 
@@ -89,7 +105,7 @@ public class WelcomeActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        currentUser = mAuth.getCurrentUser();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null && !currentUser.getUid().isEmpty())
             startActivity(homeIntent);
     }
@@ -126,6 +142,7 @@ public class WelcomeActivity extends AppCompatActivity {
                 firebaseAuthWithGoogle(account);
             } catch (ApiException e) {
                 showSnackBar("AUTHENTICATION ERROR!");
+                isAuthenticating = false;
             }
         }
     }
@@ -136,11 +153,14 @@ public class WelcomeActivity extends AppCompatActivity {
             .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
-                    if (task.isSuccessful()) {
-                        startActivity(homeIntent);
-                    } else {
+                    isAuthenticating = false;
+                    if (!task.isSuccessful()) {
                         showSnackBar("AUTHENTICATION ERROR!");
+                        return;
                     }
+
+                    addUserToDatabase();
+                    startActivity(homeIntent);
                 }
             });
     }
@@ -163,6 +183,7 @@ public class WelcomeActivity extends AppCompatActivity {
         okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                isAuthenticating = false;
                 showSnackBar("AUTHENTICATION ERROR!");
             }
 
@@ -184,14 +205,42 @@ public class WelcomeActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
+                        isAuthenticating = false;
                         if (!task.isSuccessful()) {
                             showSnackBar("AUTHENTICATION ERROR!");
                             return;
                         }
 
+                        addUserToDatabase();
                         startActivity(homeIntent);
                     }
                 });
+    }
+
+    private void addUserToDatabase() {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        firebaseDatabase = FirebaseDatabase
+                .getInstance()
+                .getReference()
+                .child("users")
+                .child(currentUser.getUid());
+
+        final HashMap<String, String> userData = new HashMap<>();
+        userData.put("name", currentUser.getDisplayName());
+        userData.put("profile_pic", currentUser.getPhotoUrl().toString());
+        userData.put("status", "online");
+
+        firebaseDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.exists()) {
+                    firebaseDatabase.setValue(userData);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        });
     }
 
     private String getRandString() {
