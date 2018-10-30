@@ -201,27 +201,23 @@ public class NewProjectActivity extends AppCompatActivity {
         (findViewById(R.id.group)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
-                    final AlertDialog.Builder builder = new AlertDialog.Builder(NewProjectActivity.this);
-                    builder.setTitle("Select a group");
-                    CharSequence groups[] = new CharSequence[groupNames.size()];
+                final AlertDialog.Builder builder = new AlertDialog.Builder(NewProjectActivity.this);
+                builder.setTitle("Select a group");
+                CharSequence groups[] = new CharSequence[groupNames.size()];
 
-                    for (int i = 0; i < groups.length; i++)
-                        groups[i] = groupNames.get(i);
+                for (int i = 0; i < groups.length; i++)
+                    groups[i] = groupNames.get(i);
 
-                    builder.setItems(groups, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            ((EditText) findViewById(R.id.group)).setText(groupNames.get(which));
-                            selectedGroupId = groupIds.get(which);
-                            ((TextInputLayout)findViewById(R.id.groupWrapper))
-                                    .setError(null);
-                        }
-                    });
-                    builder.show();
-                } catch (Exception ex) {
-                    showSnackBar(ex.getMessage());
-                }
+                builder.setItems(groups, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ((EditText) findViewById(R.id.group)).setText(groupNames.get(which));
+                        selectedGroupId = groupIds.get(which);
+                        ((TextInputLayout)findViewById(R.id.groupWrapper))
+                                .setError(null);
+                    }
+                });
+                builder.show();
             }
         });
     }

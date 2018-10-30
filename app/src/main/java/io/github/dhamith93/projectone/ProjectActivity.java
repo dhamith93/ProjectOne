@@ -1,6 +1,7 @@
 package io.github.dhamith93.projectone;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -31,6 +32,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class ProjectActivity extends AppCompatActivity {
     private String projectId;
+    private String groupId;
     private int datePos;
     private Calendar calendar;
     private DatePickerDialog.OnDateSetListener datePickerDialogListener;
@@ -84,6 +86,7 @@ public class ProjectActivity extends AppCompatActivity {
 
                 String ownerId = dataSnapshot.child("owner").getValue().toString();
                 String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                groupId = dataSnapshot.child("group").getValue().toString();
 
                 if (ownerId.equals(currentUserId)) {
                     (findViewById(R.id.btnUpdate)).setVisibility(View.VISIBLE);
@@ -99,7 +102,7 @@ public class ProjectActivity extends AppCompatActivity {
                         .getInstance()
                         .getReference()
                         .child("groups")
-                        .child(dataSnapshot.child("group").getValue().toString());
+                        .child(groupId);
 
                 groupReference.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -149,7 +152,10 @@ public class ProjectActivity extends AppCompatActivity {
         (findViewById(R.id.floatingActionButton)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // open newTask intent with projectId
+                Intent newTaskIntent = new Intent(ProjectActivity.this, NewTaskActivity.class);
+                newTaskIntent.putExtra("projectId", projectId);
+                newTaskIntent.putExtra("groupId", groupId);
+                startActivity(newTaskIntent);
             }
         });
 

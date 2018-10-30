@@ -28,6 +28,7 @@
         <activity android:name=".NewProjectActivity" >
         </activity>
         <activity android:name=".ProjectActivity" />
+        <activity android:name=".NewTaskActivity" />
     </application>
 
 </manifest>
