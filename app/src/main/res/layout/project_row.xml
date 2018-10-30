@@ -53,11 +53,10 @@
     </LinearLayout>
 
     <TextView
-        android:id="@+id/textView5"
+        android:id="@+id/lblProgress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="10sp"
-        android:text="Progress:" />
+        android:layout_marginLeft="10sp" />
 
     <ProgressBar
         android:id="@+id/projectProgressBar"
@@ -67,4 +66,5 @@
         android:layout_marginLeft="10sp"
         android:layout_marginRight="10sp"
         android:layout_marginBottom="10sp" />
+
 </LinearLayout>

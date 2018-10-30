@@ -9,11 +9,9 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -34,11 +32,8 @@ public class ProjectsFragment extends Fragment {
     private RecyclerView projectList;
     private DatabaseReference usersReference;
     private DatabaseReference projectsReference;
-    private String projectId;
 
-    public ProjectsFragment() {
-        // Required empty public constructor
-    }
+    public ProjectsFragment() { }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -82,7 +77,7 @@ public class ProjectsFragment extends Fragment {
             @Override
             protected void onBindViewHolder(@NonNull final ProjectsViewHolder projectsViewHolder, int i, @NonNull final Project project) {
 
-                projectId = getRef(i).getKey();
+                final String projectId = getRef(i).getKey();
 
                 projectsReference.child(projectId).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -95,8 +90,15 @@ public class ProjectsFragment extends Fragment {
                     }
 
                     @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                    public void onCancelled(@NonNull DatabaseError databaseError) { }
+                });
 
+                projectsViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent projectIntent = new Intent(view.getRootView().getContext(), ProjectActivity.class);
+                        projectIntent.putExtra("projectId", projectId);
+                        view.getRootView().getContext().startActivity(projectIntent);
                     }
                 });
             }
@@ -105,31 +107,20 @@ public class ProjectsFragment extends Fragment {
             @Override
             public ProjectsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
                 View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.project_row, parent, false);
-
-                return new ProjectsViewHolder(view, projectId);
+                return new ProjectsViewHolder(view);
             }
         };
 
         firebaseRecyclerAdapter.startListening();
-
         projectList.setAdapter(firebaseRecyclerAdapter);
     }
 
     public static class ProjectsViewHolder extends RecyclerView.ViewHolder {
         View view;
 
-        public ProjectsViewHolder(final View itemView, final String projectId) {
+        public ProjectsViewHolder(final View itemView) {
             super(itemView);
             view = itemView;
-
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent projectIntent = new Intent(view.getRootView().getContext(), ProjectActivity.class);
-                    projectIntent.putExtra("projectId", projectId);
-                    view.getRootView().getContext().startActivity(projectIntent);
-                }
-            });
         }
 
         public void setName(String name) {
@@ -149,6 +140,7 @@ public class ProjectsFragment extends Fragment {
         }
 
         public void setProgress(String progress) {
+            ((TextView) view.findViewById(R.id.lblProgress)).setText("Progress: ");
             int progressInt = Integer.parseInt(progress);
             progressInt = (progressInt == 0) ? 1 : progressInt;
             ((ProgressBar) view.findViewById(R.id.projectProgressBar)).setProgress(progressInt);
