@@ -120,6 +120,7 @@ public class NewTaskActivity extends AppCompatActivity {
                         projectData.put("name", name);
                         projectData.put("desc", desc);
                         projectData.put("member", selectedMemberId);
+                        projectData.put("status", "pending");
 
                         projectReference.setValue(projectData).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override

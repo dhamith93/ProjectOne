@@ -4,11 +4,16 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
@@ -29,14 +34,20 @@ import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class ProjectActivity extends AppCompatActivity {
+    private RecyclerView taskList;
     private String projectId;
     private String groupId;
     private int datePos;
     private Calendar calendar;
     private DatePickerDialog.OnDateSetListener datePickerDialogListener;
     private DatabaseReference projectReference;
+    private DatabaseReference tasksReference;
+    private FirebaseRecyclerAdapter<SingleTask, TasksViewHolder> firebaseRecyclerAdapter;
 
     private EditText txtName;
     private EditText txtDesc;
@@ -69,6 +80,22 @@ public class ProjectActivity extends AppCompatActivity {
         txtStartDate = findViewById(R.id.startDate);
         txtEndDate = findViewById(R.id.endDate);
         txtGroup = findViewById(R.id.txtGroup);
+
+        taskList = findViewById(R.id.tasksList);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        taskList.setLayoutManager(layoutManager);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(
+                taskList.getContext(),
+                layoutManager.getOrientation()
+        );
+        taskList.addItemDecoration(dividerItemDecoration);
+
+        tasksReference = FirebaseDatabase
+                .getInstance()
+                .getReference()
+                .child("projects")
+                .child(projectId)
+                .child("tasks");
 
         projectReference = FirebaseDatabase
                 .getInstance()
@@ -191,11 +218,69 @@ public class ProjectActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-//        final FirebaseRecyclerOptions<Project> options =
-//                new FirebaseRecyclerOptions.Builder<Project>()
-//                        .setQuery(usersReference, Project.class)
-//                        .build();
+        FirebaseRecyclerOptions<SingleTask> options =
+                new FirebaseRecyclerOptions.Builder<SingleTask>()
+                        .setQuery(tasksReference, SingleTask.class)
+                        .build();
 
+        firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<SingleTask, TasksViewHolder>(options) {
+            @Override
+            protected void onBindViewHolder(@NonNull final TasksViewHolder tasksViewHolder, int i, @NonNull SingleTask singleTask) {
+                final String taskId = getRef(i).getKey();
+                tasksReference.child(taskId).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        tasksViewHolder.setName(dataSnapshot.child("name").getValue().toString());
+                        tasksViewHolder.setDesc(dataSnapshot.child("desc").getValue().toString());
+                        tasksViewHolder.setStatus(dataSnapshot.child("status").getValue().toString());
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) { }
+                });
+
+                tasksViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+//                        Intent taskIntent = new Intent(ProjectActivity.this, TaskActivity.class);
+//                        projectIntent.putExtra("taskId", taskId);
+//                        startActivity(taskIntent);
+                    }
+                });
+            }
+
+            @NonNull
+            @Override
+            public TasksViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                View view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.task_row, parent, false);
+                return new TasksViewHolder(view);
+            }
+        };
+
+        firebaseRecyclerAdapter.startListening();
+        taskList.setAdapter(firebaseRecyclerAdapter);
+    }
+
+    public static class TasksViewHolder extends RecyclerView.ViewHolder {
+        View view;
+
+        public TasksViewHolder(final View itemView) {
+            super(itemView);
+            view = itemView;
+        }
+
+        public void setName(String name) {
+            ((TextView) view.findViewById(R.id.lblTaskName)).setText(name);
+        }
+
+        public void setDesc(String desc) {
+            ((TextView) view.findViewById(R.id.lblTaskDesc)).setText(desc);
+        }
+
+        public void setStatus(String status) {
+            ((TextView) view.findViewById(R.id.lblStatus)).setText("Status: " + status);
+        }
     }
 
     private void displayDatePicker() {
@@ -307,3 +392,5 @@ public class ProjectActivity extends AppCompatActivity {
         ).show();
     }
 }
+
+
