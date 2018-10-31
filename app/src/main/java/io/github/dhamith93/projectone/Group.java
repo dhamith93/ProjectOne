@@ -1,11 +1,11 @@
 package io.github.dhamith93.projectone;
 
-public class Project {
+public class Group {
     private String active;
 
-    public Project() { }
+    public Group() { }
 
-    public Project(String active) {
+    public Group(String active) {
         this.active = active;
     }
 
