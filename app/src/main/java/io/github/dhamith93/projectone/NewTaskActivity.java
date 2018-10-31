@@ -125,31 +125,30 @@ public class NewTaskActivity extends AppCompatActivity {
                         projectReference.setValue(projectData).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
-                                if (task.isSuccessful()) {
-                                    DatabaseReference userReference = FirebaseDatabase
-                                            .getInstance()
-                                            .getReference()
-                                            .child("users")
-                                            .child(selectedMemberId)
-                                            .child("tasks")
-                                            .child(projectId)
-                                            .child(key);
+                                DatabaseReference userReference = FirebaseDatabase
+                                        .getInstance()
+                                        .getReference()
+                                        .child("users")
+                                        .child(selectedMemberId)
+                                        .child("tasks")
+                                        .child(projectId)
+                                        .child(key);
 
-                                    HashMap<String, String> project = new HashMap<>();
-                                    project.put("active", "1");
-                                    userReference.setValue(project).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            if (task.isSuccessful())
-                                                finish();
-                                        }
-                                    }).addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            showSnackBar("ERROR!");
-                                        }
-                                    });
-                                }
+                                HashMap<String, String> project = new HashMap<>();
+                                project.put("active", "1");
+                                userReference.setValue(project).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful())
+                                            finish();
+                                        showSnackBar(task.getException().getMessage());
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        showSnackBar("ERROR!");
+                                    }
+                                });
                             }
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
@@ -195,13 +194,13 @@ public class NewTaskActivity extends AppCompatActivity {
         String member = txtMember.getText().toString();
 
         if (name.isEmpty()) {
-            ((TextInputLayout)findViewById(R.id.nameWrapper))
+            ((TextInputLayout)findViewById(R.id.taskNameWrapper))
                     .setError("Name is empty!");
             error = true;
         }
 
         if (desc.isEmpty()) {
-            ((TextInputLayout)findViewById(R.id.descWrapper))
+            ((TextInputLayout)findViewById(R.id.taskDescWrapper))
                     .setError("Description is empty!");
             error = true;
         }

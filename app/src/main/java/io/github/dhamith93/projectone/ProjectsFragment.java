@@ -55,6 +55,7 @@ public class ProjectsFragment extends Fragment {
                 .getInstance()
                 .getReference()
                 .child("projects");
+        projectsReference.keepSynced(true);
 
         projectList.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());

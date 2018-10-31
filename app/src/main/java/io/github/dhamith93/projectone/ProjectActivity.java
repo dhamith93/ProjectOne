@@ -227,12 +227,14 @@ public class ProjectActivity extends AppCompatActivity {
             @Override
             protected void onBindViewHolder(@NonNull final TasksViewHolder tasksViewHolder, int i, @NonNull SingleTask singleTask) {
                 final String taskId = getRef(i).getKey();
+                final String[] memberId = new String[1];
                 tasksReference.child(taskId).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         tasksViewHolder.setName(dataSnapshot.child("name").getValue().toString());
                         tasksViewHolder.setDesc(dataSnapshot.child("desc").getValue().toString());
                         tasksViewHolder.setStatus(dataSnapshot.child("status").getValue().toString());
+                        memberId[0] = dataSnapshot.child("member").getValue().toString();
                     }
 
                     @Override
@@ -242,9 +244,12 @@ public class ProjectActivity extends AppCompatActivity {
                 tasksViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-//                        Intent taskIntent = new Intent(ProjectActivity.this, TaskActivity.class);
-//                        projectIntent.putExtra("taskId", taskId);
-//                        startActivity(taskIntent);
+                        Intent taskIntent = new Intent(ProjectActivity.this, TaskActivity.class);
+                        taskIntent.putExtra("projectId", projectId);
+                        taskIntent.putExtra("taskId", taskId);
+                        taskIntent.putExtra("groupId", groupId);
+                        taskIntent.putExtra("memberId", memberId[0]);
+                        startActivity(taskIntent);
                     }
                 });
             }
@@ -299,30 +304,15 @@ public class ProjectActivity extends AppCompatActivity {
         String desc = txtDesc.getText().toString();
 
         if (startDateIsValid && endDateIsValid) {
-            String startDate = txtStartDate.getText().toString();
-            String endDate = txtEndDate.getText().toString();
-
             if (name.isEmpty()) {
-                ((TextInputLayout)findViewById(R.id.nameWrapper))
+                ((TextInputLayout)findViewById(R.id.nameProjectWrapper))
                         .setError("Name is empty!");
                 error = true;
             }
 
             if (desc.isEmpty()) {
-                ((TextInputLayout)findViewById(R.id.descWrapper))
+                ((TextInputLayout)findViewById(R.id.descProjectWrapper))
                         .setError("Description is empty!");
-                error = true;
-            }
-
-            if (startDate.isEmpty()) {
-                ((TextInputLayout)findViewById(R.id.startDateWrapper))
-                        .setError("Start date is empty!");
-                error = true;
-            }
-
-            if (endDate.isEmpty()) {
-                ((TextInputLayout)findViewById(R.id.endDateWrapper))
-                        .setError("End date is empty!");
                 error = true;
             }
         } else {
