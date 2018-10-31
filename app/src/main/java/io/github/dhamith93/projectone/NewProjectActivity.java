@@ -149,7 +149,7 @@ public class NewProjectActivity extends AppCompatActivity {
                             .child("projects")
                             .child(key);
 
-                    HashMap<String, String> projectData = new HashMap<>();
+                    final HashMap<String, String> projectData = new HashMap<>();
                     projectData.put("name", name);
                     projectData.put("desc", desc);
                     projectData.put("startDate", startDate);
@@ -191,6 +191,28 @@ public class NewProjectActivity extends AppCompatActivity {
                         public void onFailure(@NonNull Exception e) {
                             showSnackBar("ERROR!");
                         }
+                    });
+
+                    groupsReference.child(selectedGroupId).child("members").addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                                String memberId = ds.getKey();
+                                DatabaseReference memberReference = FirebaseDatabase
+                                        .getInstance()
+                                        .getReference()
+                                        .child("users")
+                                        .child(memberId)
+                                        .child("projects")
+                                        .child(key)
+                                        .child("active");
+
+                                memberReference.setValue("1");
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) { }
                     });
                 } else {
                     Log.e("DATABASE_ERROR", "NO ERRORS");
