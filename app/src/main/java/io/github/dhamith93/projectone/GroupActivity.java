@@ -1,12 +1,10 @@
 package io.github.dhamith93.projectone;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -21,6 +19,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
@@ -83,6 +82,7 @@ public class GroupActivity extends AppCompatActivity {
         groupReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                members.clear();
                 groupName.setText(dataSnapshot.child("name").getValue().toString());
                 String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
                 for (DataSnapshot ds : dataSnapshot.child("members").getChildren())
@@ -142,60 +142,62 @@ public class GroupActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
-        FirebaseRecyclerOptions<User> options =
-                new FirebaseRecyclerOptions.Builder<User>()
-                        .setQuery(membersReference, User.class)
-                        .build();
-        FirebaseRecyclerAdapter<User, UsersViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<User, UsersViewHolder>(options) {
+        groupReference.addValueEventListener(new ValueEventListener() {
             @Override
-            protected void onBindViewHolder(@NonNull final UsersViewHolder usersViewHolder, int i, @NonNull User user) {
-                final String userId = getRef(i).getKey();
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds : dataSnapshot.child("members").getChildren())
+                    members.add(ds.getKey());
 
-                if (members.contains(userId)) {
-                    membersReference.child(userId).addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            usersViewHolder.setName(dataSnapshot.child("name").getValue().toString());
-                            usersViewHolder.setProfilePic(dataSnapshot.child("profile_pic").getValue().toString());
+                final Query filterQuery = membersReference.orderByKey().startAt(members.get(0)).endAt(members.get(members.size() - 1));
 
-                            if (isLeader)
-                                usersViewHolder.setDeleteButtonVisible();
+                FirebaseRecyclerOptions<User> options =
+                        new FirebaseRecyclerOptions.Builder<User>()
+                                .setQuery(filterQuery, User.class)
+                                .build();
+                final FirebaseRecyclerAdapter<User, UsersViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<User, UsersViewHolder>(options) {
+                    @Override
+                    protected void onBindViewHolder(@NonNull final UsersViewHolder usersViewHolder, int i, @NonNull User user) {
+                        filterQuery.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                                    usersViewHolder.setName(ds.child("name").getValue().toString());
+                                    usersViewHolder.setProfilePic(ds.child("profile_pic").getValue().toString());
 
-                            usersViewHolder.btnDelete.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    // TODO remove member from group
-                                    // TODO delete memebr's tasks
-                                    // TODO delete tasks/project/group info from member
+                                    if (isLeader)
+                                        usersViewHolder.setDeleteButtonVisible();
+
+                                    usersViewHolder.btnDelete.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            // TODO remove member from group
+                                            // TODO delete memebr's tasks
+                                            // TODO delete tasks/project/group info from member
+                                        }
+                                    });
                                 }
-                            });
-                        }
+                            }
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) { }
+                        });
+                    }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) { }
-                    });
+                    @NonNull
+                    @Override
+                    public UsersViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                        View view = LayoutInflater.from(parent.getContext())
+                                .inflate(R.layout.user_row, parent, false);
+                        return new UsersViewHolder(view);
+                    }
+                };
 
-                    usersViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-
-                        }
-                    });
-                }
+                firebaseRecyclerAdapter.startListening();
+                memberList.setAdapter(firebaseRecyclerAdapter);
             }
 
-            @NonNull
             @Override
-            public UsersViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                View view = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.user_row, parent, false);
-                return new UsersViewHolder(view);
-            }
-        };
-
-        firebaseRecyclerAdapter.startListening();
-        memberList.setAdapter(firebaseRecyclerAdapter);
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        });
     }
 
     public static class UsersViewHolder extends RecyclerView.ViewHolder {
