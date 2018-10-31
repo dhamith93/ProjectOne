@@ -94,9 +94,9 @@ public class GroupsFragment extends Fragment {
                 groupsViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-//                        Intent groupIntent = new Intent(view.getRootView().getContext(), GroupActivity.class);
-//                        groupIntent.putExtra("groupId", groupId);
-//                        view.getRootView().getContext().startActivity(groupIntent);
+                        Intent groupIntent = new Intent(view.getRootView().getContext(), GroupActivity.class);
+                        groupIntent.putExtra("groupId", groupId);
+                        view.getRootView().getContext().startActivity(groupIntent);
                     }
                 });
             }

@@ -1,6 +1,7 @@
 package io.github.dhamith93.projectone;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -52,7 +53,9 @@ public class TaskActivity extends AppCompatActivity {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (currentUser.getUid().equals(memberId)) {
-            checkBoxDone.setEnabled(false);
+            Log.e("exception", currentUser.getUid());
+            Log.e("exception", memberId);
+            checkBoxDone.setEnabled(true);
         }
 
         DatabaseReference memberReference = FirebaseDatabase
@@ -149,7 +152,7 @@ public class TaskActivity extends AppCompatActivity {
         (findViewById(R.id.btnTaskChat)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // start chat
+                // TODO start chat
             }
         });
     }

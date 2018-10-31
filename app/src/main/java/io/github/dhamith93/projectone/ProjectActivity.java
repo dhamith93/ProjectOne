@@ -47,7 +47,6 @@ public class ProjectActivity extends AppCompatActivity {
     private DatePickerDialog.OnDateSetListener datePickerDialogListener;
     private DatabaseReference projectReference;
     private DatabaseReference tasksReference;
-    private FirebaseRecyclerAdapter<SingleTask, TasksViewHolder> firebaseRecyclerAdapter;
 
     private EditText txtName;
     private EditText txtDesc;
@@ -223,7 +222,7 @@ public class ProjectActivity extends AppCompatActivity {
                         .setQuery(tasksReference, SingleTask.class)
                         .build();
 
-        firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<SingleTask, TasksViewHolder>(options) {
+        FirebaseRecyclerAdapter<SingleTask, TasksViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<SingleTask, TasksViewHolder>(options) {
             @Override
             protected void onBindViewHolder(@NonNull final TasksViewHolder tasksViewHolder, int i, @NonNull SingleTask singleTask) {
                 final String taskId = getRef(i).getKey();
@@ -238,7 +237,8 @@ public class ProjectActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) { }
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                    }
                 });
 
                 tasksViewHolder.itemView.setOnClickListener(new View.OnClickListener() {

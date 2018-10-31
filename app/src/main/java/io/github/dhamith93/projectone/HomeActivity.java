@@ -8,7 +8,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
@@ -66,7 +65,6 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 selectedTabIndex = tab.getPosition();
-                ((BottomAppBar) findViewById(R.id.bottom_app_bar)).setVisibility(View.VISIBLE);
             }
 
             @Override
@@ -108,9 +106,6 @@ public class HomeActivity extends AppCompatActivity {
 
                         }
                     });
-
-                    Log.d("JSON ARRAY", projectArray.toString());
-
                 }
             }
 
@@ -131,6 +126,7 @@ public class HomeActivity extends AppCompatActivity {
                         cls = NewProjectActivity.class;
                         break;
                     case 1:
+                        cls = NewGroupActivity.class;
                         break;
                     case 2:
                         break;

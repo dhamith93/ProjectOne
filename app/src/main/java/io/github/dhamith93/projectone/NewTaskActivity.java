@@ -141,7 +141,6 @@ public class NewTaskActivity extends AppCompatActivity {
                                     public void onComplete(@NonNull Task<Void> task) {
                                         if (task.isSuccessful())
                                             finish();
-                                        showSnackBar(task.getException().getMessage());
                                     }
                                 }).addOnFailureListener(new OnFailureListener() {
                                     @Override
