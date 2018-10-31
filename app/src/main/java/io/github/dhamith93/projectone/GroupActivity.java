@@ -1,6 +1,8 @@
 package io.github.dhamith93.projectone;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +17,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -27,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -142,62 +146,116 @@ public class GroupActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        groupReference.addValueEventListener(new ValueEventListener() {
+
+        Query memberQuery = FirebaseDatabase
+                .getInstance()
+                .getReference()
+                .child("users")
+                .orderByChild("memberOf/" + groupId + "/active")
+                .equalTo("1");
+
+        FirebaseRecyclerOptions<User> options =
+        new FirebaseRecyclerOptions.Builder<User>()
+                .setQuery(memberQuery, User.class)
+                .build();
+
+        final FirebaseRecyclerAdapter<User, UsersViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<User, UsersViewHolder>(options) {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot ds : dataSnapshot.child("members").getChildren())
-                    members.add(ds.getKey());
+            protected void onBindViewHolder(@NonNull final UsersViewHolder usersViewHolder, int i, @NonNull User user) {
+                usersViewHolder.setName(user.getName());
+                usersViewHolder.setProfilePic(user.getProfile_pic());
+                final int pos = i;
 
-                final Query filterQuery = membersReference.orderByKey().startAt(members.get(0)).endAt(members.get(members.size() - 1));
+                DatabaseReference userReference = FirebaseDatabase
+                        .getInstance()
+                        .getReference()
+                        .child("users")
+                        .child(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
-                FirebaseRecyclerOptions<User> options =
-                        new FirebaseRecyclerOptions.Builder<User>()
-                                .setQuery(filterQuery, User.class)
-                                .build();
-                final FirebaseRecyclerAdapter<User, UsersViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<User, UsersViewHolder>(options) {
+                userReference.addValueEventListener(new ValueEventListener() {
                     @Override
-                    protected void onBindViewHolder(@NonNull final UsersViewHolder usersViewHolder, int i, @NonNull User user) {
-                        filterQuery.addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                                    usersViewHolder.setName(ds.child("name").getValue().toString());
-                                    usersViewHolder.setProfilePic(ds.child("profile_pic").getValue().toString());
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.child("leaderOf").child(groupId).exists()) {
+                            if (!dataSnapshot.getKey().equals(members.get(pos)))
+                                usersViewHolder.setDeleteButtonVisible();
+                        }
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) { }
+                });
 
-                                    if (isLeader)
-                                        usersViewHolder.setDeleteButtonVisible();
+                usersViewHolder.btnDelete.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (!members.get(pos).equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+                            DatabaseReference memberReference = FirebaseDatabase
+                                    .getInstance()
+                                    .getReference()
+                                    .child("users")
+                                    .child(members.get(pos))
+                                    .child("tasks");
 
-                                    usersViewHolder.btnDelete.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View view) {
-                                            // TODO remove member from group
-                                            // TODO delete memebr's tasks
-                                            // TODO delete tasks/project/group info from member
-                                        }
-                                    });
+                            memberReference.addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                                        String projectId = ds.getKey();
+                                        DatabaseReference projectReference = FirebaseDatabase
+                                                .getInstance()
+                                                .getReference()
+                                                .child("projects")
+                                                .child(projectId)
+                                                .child("group");
+
+                                        projectReference.addValueEventListener(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                String projectGroupId = dataSnapshot.getValue().toString();
+
+                                                if (projectGroupId.equals(groupId)) {
+                                                    new AlertDialog.Builder(GroupActivity.this)
+                                                            .setTitle("Can't remove member!")
+                                                            .setMessage("This member has assigned tasks. Reassign them first!")
+                                                            .setNegativeButton(android.R.string.ok, null)
+                                                            .create()
+                                                            .show();
+                                                } else {
+                                                    removeMemberFromGroup(members.get(pos));
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError databaseError) { }
+                                        });
+                                    }
                                 }
-                            }
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) { }
-                        });
-                    }
 
-                    @NonNull
-                    @Override
-                    public UsersViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                        View view = LayoutInflater.from(parent.getContext())
-                                .inflate(R.layout.user_row, parent, false);
-                        return new UsersViewHolder(view);
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) { }
+                            });
+                        } else {
+                            showSnackBar(members.get(pos));
+                        }
                     }
-                };
-
-                firebaseRecyclerAdapter.startListening();
-                memberList.setAdapter(firebaseRecyclerAdapter);
+                });
             }
 
+            @NonNull
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) { }
-        });
+            public UsersViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                View view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.user_row, parent, false);
+                return new UsersViewHolder(view);
+            }
+        };
+
+        firebaseRecyclerAdapter.startListening();
+        memberList.setAdapter(firebaseRecyclerAdapter);
+    }
+
+    private void removeMemberFromGroup(String memberId) {
+        // TODO remove user
+        showSnackBar("REMOVED");
     }
 
     public static class UsersViewHolder extends RecyclerView.ViewHolder {
