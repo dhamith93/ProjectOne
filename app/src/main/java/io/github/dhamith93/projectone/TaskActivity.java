@@ -1,5 +1,7 @@
 package io.github.dhamith93.projectone;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -9,6 +11,7 @@ import android.widget.EditText;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -17,6 +20,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -24,13 +31,20 @@ public class TaskActivity extends AppCompatActivity {
     private String projectId;
     private String taskId;
     private String memberId;
+    private String selectedMemberId;
+    private String groupId;
+    private boolean isOwner;
 
     private EditText txtName;
     private EditText txtDesc;
     private EditText txtMember;
     private CheckBox checkBoxDone;
 
+    private List<String> memberIds;
+    private List<String> memberNames;
+
     private DatabaseReference taskReference;
+    private DatabaseReference memberReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,27 +56,31 @@ public class TaskActivity extends AppCompatActivity {
             projectId = extras.getString("projectId");
             taskId = extras.getString("taskId");
             memberId = extras.getString("memberId");
-            String groupId = extras.getString("groupId");
+            groupId = extras.getString("groupId");
         }
+
+        isOwner = false;
 
         txtName = findViewById(R.id.txtTaskInfoName);
         txtDesc = findViewById(R.id.txtTaskInfoDesc);
         txtMember = findViewById(R.id.taskMember);
         checkBoxDone = findViewById(R.id.checkBoxDone);
 
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        memberIds = new ArrayList<>();
+        memberNames = new ArrayList<>();
+
+        final FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (currentUser.getUid().equals(memberId)) {
-            Log.e("exception", currentUser.getUid());
-            Log.e("exception", memberId);
             checkBoxDone.setEnabled(true);
         }
 
-        DatabaseReference memberReference = FirebaseDatabase
+        memberReference = FirebaseDatabase
                 .getInstance()
                 .getReference()
                 .child("users")
                 .child(memberId);
+
         taskReference = FirebaseDatabase
                 .getInstance()
                 .getReference()
@@ -90,6 +108,58 @@ public class TaskActivity extends AppCompatActivity {
 
                 if (status.equals("completed"))
                     checkBoxDone.setChecked(true);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        });
+
+        DatabaseReference groupReference = FirebaseDatabase
+                .getInstance()
+                .getReference()
+                .child("groups")
+                .child(groupId)
+                .child("members");
+
+        groupReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        memberIds.add(ds.getKey());
+                        DatabaseReference userReference = FirebaseDatabase
+                                .getInstance()
+                                .getReference()
+                                .child("users")
+                                .child(ds.getKey());
+                        userReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                memberNames.add(dataSnapshot.child("name").getValue().toString());
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) { }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        });
+
+        DatabaseReference projectReference = FirebaseDatabase
+                .getInstance()
+                .getReference()
+                .child("projects")
+                .child(projectId)
+                .child("owner");
+
+        projectReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                isOwner = dataSnapshot.getValue().toString().equals(currentUser.getUid());
             }
 
             @Override
@@ -149,10 +219,74 @@ public class TaskActivity extends AppCompatActivity {
             }
         });
 
+        txtMember.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isOwner) {
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(TaskActivity.this);
+                    builder.setTitle("Select a member");
+                    CharSequence groups[] = new CharSequence[memberNames.size()];
+
+                    for (int i = 0; i < groups.length; i++)
+                        groups[i] = memberNames.get(i);
+
+                    builder.setItems(groups, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            updateTaskMember(memberIds.get(which), memberNames.get(which));
+                        }
+                    });
+                    builder.show();
+                }
+            }
+        });
+
         (findViewById(R.id.btnTaskChat)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // TODO start chat
+            }
+        });
+    }
+
+    private void updateTaskMember(final String newMemberId, final String newMemberName) {
+        memberReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                dataSnapshot.child("tasks").child(projectId).child(taskId).getRef().removeValue();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        });
+
+        DatabaseReference newMemberReference = FirebaseDatabase
+                .getInstance()
+                .getReference()
+                .child("users")
+                .child(newMemberId)
+                .child("tasks")
+                .child(projectId)
+                .child(taskId);
+
+        HashMap<String, String> taskData = new HashMap<>();
+        taskData.put("active", "1");
+
+        newMemberReference.setValue(taskData).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                taskReference.child("member").setValue(newMemberId).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        ((EditText) findViewById(R.id.taskMember)).setText(newMemberName);
+                        if (FirebaseAuth.getInstance().getCurrentUser().getUid().equals(newMemberId)) {
+                            checkBoxDone.setEnabled(true);
+                        } else {
+                            checkBoxDone.setEnabled(false);
+                        }
+                        showSnackBar("Task assigned to " + newMemberName);
+                    }
+                });
             }
         });
     }
