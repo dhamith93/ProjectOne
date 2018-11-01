@@ -15,7 +15,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10sp"
             android:layout_marginTop="20sp"
-            android:text="Search and send invitations"
+            android:text="Search and select to invite"
             android:textColor="@color/black"
             android:textSize="24sp" />
 

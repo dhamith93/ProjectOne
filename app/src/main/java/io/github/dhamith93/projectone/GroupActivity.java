@@ -144,6 +144,7 @@ public class GroupActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent searchIntent = new Intent(GroupActivity.this, SearchActivity.class);
                 searchIntent.putExtra("groupId", groupId);
+                searchIntent.putExtra("groupName", groupName.getText().toString());
                 startActivity(searchIntent);
             }
         });
