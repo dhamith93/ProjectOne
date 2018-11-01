@@ -140,42 +140,47 @@ public class SearchActivity extends AppCompatActivity {
                                     alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "YES", new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
-                                            String currentUId = FirebaseAuth
+                                            final String currentUId = FirebaseAuth
                                                     .getInstance()
                                                     .getCurrentUser()
                                                     .getUid();
 
-                                            String key = FirebaseDatabase
+                                            final DatabaseReference notificationReference = FirebaseDatabase
                                                     .getInstance()
                                                     .getReference()
                                                     .child("notifications")
                                                     .child(uid)
-                                                    .push()
-                                                    .getKey();
+                                                    .child(groupId);
 
-                                            DatabaseReference notificationReference = FirebaseDatabase
-                                                    .getInstance()
-                                                    .getReference()
-                                                    .child("notifications")
-                                                    .child(uid)
-                                                    .child(key);
-
-                                            HashMap<String, String> notificationInfo = new HashMap<>();
-                                            notificationInfo.put("from", currentUId);
-                                            notificationInfo.put("type", "groupInvite");
-                                            notificationInfo.put("groupId", groupId);
-                                            notificationInfo.put("groupName", groupName);
-                                            notificationInfo.put("seen", "0");
-
-                                            notificationReference.setValue(notificationInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            notificationReference.addListenerForSingleValueEvent(new ValueEventListener() {
                                                 @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
-                                                    if (task.isSuccessful()) {
-                                                        showSnackBar("Invitation sent!");
-                                                    } else {
-                                                        showSnackBar("Error! Try again.");
+                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                    if (dataSnapshot.exists()) {
+                                                        showSnackBar("You've already sent an invite!");
+                                                        return;
                                                     }
+
+                                                    HashMap<String, String> notificationInfo = new HashMap<>();
+                                                    notificationInfo.put("from", currentUId);
+                                                    notificationInfo.put("type", "groupInvite");
+                                                    notificationInfo.put("groupName", groupName);
+                                                    notificationInfo.put("seen", "0");
+
+                                                    notificationReference.setValue(notificationInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                            if (task.isSuccessful()) {
+                                                                showSnackBar("Invitation sent!");
+                                                            } else {
+                                                                showSnackBar("Error! Try again.");
+                                                            }
+                                                        }
+                                                    });
+
                                                 }
+
+                                                @Override
+                                                public void onCancelled(@NonNull DatabaseError databaseError) { }
                                             });
                                         }
                                     });

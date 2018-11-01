@@ -25,6 +25,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthCredential;
@@ -38,6 +39,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -218,30 +221,40 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     private void addUserToDatabase() {
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        firebaseDatabase = FirebaseDatabase
-                .getInstance()
-                .getReference()
-                .child("users")
-                .child(currentUser.getUid());
-
-        final HashMap<String, String> userData = new HashMap<>();
-        userData.put("name", currentUser.getDisplayName());
-        userData.put("email", currentUser.getEmail());
-        userData.put("profile_pic", currentUser.getPhotoUrl().toString());
-        userData.put("status", "online");
-
-        firebaseDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(this, new OnSuccessListener<InstanceIdResult>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (!dataSnapshot.exists()) {
-                    firebaseDatabase.setValue(userData);
-                }
+            public void onSuccess(InstanceIdResult instanceIdResult) {
+                String token = instanceIdResult.getToken();
+                FirebaseUser currentUser = mAuth.getCurrentUser();
+                firebaseDatabase = FirebaseDatabase
+                        .getInstance()
+                        .getReference()
+                        .child("users")
+                        .child(currentUser.getUid());
+
+                final HashMap<String, Object> userData = new HashMap<>();
+                userData.put("deviceToken", token);
+                userData.put("name", currentUser.getDisplayName());
+                userData.put("email", currentUser.getEmail());
+                userData.put("profile_pic", currentUser.getPhotoUrl().toString());
+                userData.put("status", "online");
+
+                firebaseDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if (!dataSnapshot.exists()) {
+                            firebaseDatabase.setValue(userData);
+                        } else {
+                            firebaseDatabase.updateChildren(userData);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) { }
+                });
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
+
     }
 
     private String getRandString() {

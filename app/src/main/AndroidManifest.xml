@@ -18,22 +18,42 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data android:scheme="local" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".HomeActivity">
-        </activity>
-        <activity android:name=".NewProjectActivity" >
-        </activity>
+        <activity android:name=".HomeActivity" />
+        <activity android:name=".NewProjectActivity" />
         <activity android:name=".ProjectActivity" />
         <activity android:name=".NewTaskActivity" />
         <activity android:name=".TaskActivity" />
         <activity android:name=".GroupActivity" />
         <activity android:name=".NewGroupActivity" />
         <activity android:name=".SearchActivity" />
+
+        <service
+            android:name=".MessagingService"
+            android:enabled="true"
+            android:exported="true"
+            android:stopWithTask="false">
+
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+
+        </service>
+
+        <!--TODO app icon-->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_google" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/colorAccent" />
+
     </application>
 
 </manifest>
