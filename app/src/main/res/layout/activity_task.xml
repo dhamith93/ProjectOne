@@ -87,17 +87,37 @@
                 android:enabled="false"
                 android:text="Task Completed" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnTaskChat"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|end"
-                android:layout_marginTop="20sp"
-                android:layout_marginEnd="20sp"
-                android:layout_marginBottom="20sp"
-                android:backgroundTint="@color/colorAccent"
-                android:text="Chat about task"
-                app:cornerRadius="5dp" />
+                android:layout_gravity="center_horizontal"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOpenProject"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|start"
+                    android:layout_marginTop="20sp"
+                    android:layout_marginEnd="20sp"
+                    android:layout_marginBottom="20sp"
+                    android:backgroundTint="@color/colorAccent"
+                    android:text="Open Project"
+                    app:cornerRadius="5dp"
+                    android:visibility="gone"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTaskChat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|end"
+                    android:layout_marginTop="20sp"
+                    android:layout_marginBottom="20sp"
+                    android:backgroundTint="@color/colorAccent"
+                    android:text="Chat about task"
+                    app:cornerRadius="5dp" />
+
+            </LinearLayout>
         </LinearLayout>
 
     </ScrollView>

@@ -139,8 +139,19 @@ public class NewTaskActivity extends AppCompatActivity {
                                 userReference.setValue(project).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
-                                        if (task.isSuccessful())
+                                        if (task.isSuccessful()) {
+                                            DatabaseReference taskReference = FirebaseDatabase
+                                                    .getInstance()
+                                                    .getReference()
+                                                    .child("tasks")
+                                                    .child(selectedMemberId)
+                                                    .child(key);
+                                            HashMap<String, String> taskInfo = new HashMap<>();
+                                            taskInfo.put("projectId", projectId);
+
+                                            taskReference.setValue(taskInfo);
                                             finish();
+                                        }
                                     }
                                 }).addOnFailureListener(new OnFailureListener() {
                                     @Override

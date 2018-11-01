@@ -15,8 +15,10 @@ class FractionsAdapter extends FragmentPagerAdapter {
             case 0:
                 return new ProjectsFragment();
             case 1:
-                return new GroupsFragment();
+                return new MyTasksFragment();
             case 2:
+                return new GroupsFragment();
+            case 3:
                 return new ChatsFragment();
             default:
                 return null;
@@ -24,7 +26,7 @@ class FractionsAdapter extends FragmentPagerAdapter {
     }
 
     @Override
-    public int getCount() { return 3; }
+    public int getCount() { return 4; }
 
     @Override
     public CharSequence getPageTitle(int i) {
@@ -32,9 +34,11 @@ class FractionsAdapter extends FragmentPagerAdapter {
             case 0:
                 return "PROJECTS";
             case 1:
-                return "GROUPS";
+                return "MY TASKS";
             case 2:
-                return "CHATS";
+                return "GROUPS";
+            case 3:
+                return "CHAT";
             default:
                 return null;
         }

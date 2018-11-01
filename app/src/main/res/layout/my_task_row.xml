@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:background="?android:attr/selectableItemBackground"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/lblMyTaskName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10sp"
+        android:layout_marginTop="10sp"
+        android:layout_marginRight="10sp"
+        android:layout_marginBottom="5sp"
+        android:ellipsize="end"
+        android:maxEms="15"
+        android:maxLines="1"
+        android:textColor="@color/black"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/lblMyTaskDesc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10sp"
+        android:layout_marginRight="10sp"
+        android:layout_marginBottom="5sp"
+        android:ellipsize="end"
+        android:maxEms="15"
+        android:maxLines="1"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/lblMyTaskStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10sp"
+        android:layout_marginRight="10sp"
+        android:layout_marginBottom="5sp"
+        android:ellipsize="end"
+        android:maxEms="15"
+        android:maxLines="1"
+        android:textSize="14sp" />
+
+</LinearLayout>

@@ -2,8 +2,8 @@ package io.github.dhamith93.projectone;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -11,7 +11,6 @@ import android.widget.EditText;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -31,7 +30,6 @@ public class TaskActivity extends AppCompatActivity {
     private String projectId;
     private String taskId;
     private String memberId;
-    private String selectedMemberId;
     private String groupId;
     private boolean isOwner;
 
@@ -57,6 +55,9 @@ public class TaskActivity extends AppCompatActivity {
             taskId = extras.getString("taskId");
             memberId = extras.getString("memberId");
             groupId = extras.getString("groupId");
+
+            if (extras.containsKey("fromMyTask"))
+                (findViewById(R.id.btnOpenProject)).setVisibility(View.VISIBLE);
         }
 
         isOwner = false;
@@ -241,6 +242,15 @@ public class TaskActivity extends AppCompatActivity {
             }
         });
 
+        (findViewById(R.id.btnOpenProject)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent projectIntent = new Intent(TaskActivity.this, ProjectActivity.class);
+                projectIntent.putExtra("projectId", projectId);
+                startActivity(projectIntent);
+            }
+        });
+
         (findViewById(R.id.btnTaskChat)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -278,6 +288,28 @@ public class TaskActivity extends AppCompatActivity {
                 taskReference.child("member").setValue(newMemberId).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
+                        FirebaseDatabase
+                                .getInstance()
+                                .getReference()
+                                .child("tasks")
+                                .child(memberId)
+                                .child(taskId)
+                                .removeValue();
+
+                        DatabaseReference taskReference = FirebaseDatabase
+                                .getInstance()
+                                .getReference()
+                                .child("tasks")
+                                .child(newMemberId)
+                                .child(taskId);
+
+                        memberId = newMemberId;
+
+                        HashMap<String, String> taskInfo = new HashMap<>();
+                        taskInfo.put("projectId", projectId);
+
+                        taskReference.setValue(taskInfo);
+
                         ((EditText) findViewById(R.id.taskMember)).setText(newMemberName);
                         if (FirebaseAuth.getInstance().getCurrentUser().getUid().equals(newMemberId)) {
                             checkBoxDone.setEnabled(true);

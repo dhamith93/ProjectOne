@@ -270,7 +270,6 @@ public class GroupActivity extends AppCompatActivity {
                         });
                     }
                 });
-                // TODO remove user
             }
         };
 
