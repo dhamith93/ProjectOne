@@ -2,6 +2,7 @@ package io.github.dhamith93.projectone;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -141,7 +142,9 @@ public class GroupActivity extends AppCompatActivity {
         (findViewById(R.id.addMemberFab)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO search activity
+                Intent searchIntent = new Intent(GroupActivity.this, SearchActivity.class);
+                searchIntent.putExtra("groupId", groupId);
+                startActivity(searchIntent);
             }
         });
     }

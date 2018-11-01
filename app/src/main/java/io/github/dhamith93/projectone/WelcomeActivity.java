@@ -227,6 +227,7 @@ public class WelcomeActivity extends AppCompatActivity {
 
         final HashMap<String, String> userData = new HashMap<>();
         userData.put("name", currentUser.getDisplayName());
+        userData.put("email", currentUser.getEmail());
         userData.put("profile_pic", currentUser.getPhotoUrl().toString());
         userData.put("status", "online");
 

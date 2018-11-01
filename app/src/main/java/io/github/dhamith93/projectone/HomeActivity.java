@@ -8,6 +8,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
@@ -35,10 +36,8 @@ import org.json.JSONObject;
 public class HomeActivity extends AppCompatActivity {
 
     private int selectedTabIndex;
-    private String currentUid;
     private Intent welcomeIntent;
 
-    private DatabaseReference userDatabase;
     private DatabaseReference projectsDatabase;
     private JSONArray projectArray;
 
@@ -65,6 +64,11 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 selectedTabIndex = tab.getPosition();
+                if (selectedTabIndex == 1) {
+                    ((FloatingActionButton) findViewById(R.id.fab)).hide();
+                } else {
+                    ((FloatingActionButton) findViewById(R.id.fab)).show();
+                }
             }
 
             @Override
@@ -74,14 +78,14 @@ public class HomeActivity extends AppCompatActivity {
             public void onTabReselected(TabLayout.Tab tab) { }
         });
 
-        currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         projectsDatabase = FirebaseDatabase
                 .getInstance()
                 .getReference()
                 .child("projects");
 
 
-        userDatabase = FirebaseDatabase
+        DatabaseReference userDatabase = FirebaseDatabase
                 .getInstance()
                 .getReference()
                 .child("users")
@@ -126,9 +130,10 @@ public class HomeActivity extends AppCompatActivity {
                         cls = NewProjectActivity.class;
                         break;
                     case 1:
-                        cls = NewGroupActivity.class;
+
                         break;
                     case 2:
+                        cls = NewGroupActivity.class;
                         break;
                     default:
                         // throw error
