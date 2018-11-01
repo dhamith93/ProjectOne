@@ -1,12 +1,15 @@
 package io.github.dhamith93.projectone;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -233,8 +236,6 @@ public class GroupActivity extends AppCompatActivity {
                                 @Override
                                 public void onCancelled(@NonNull DatabaseError databaseError) { }
                             });
-                        } else {
-                            showSnackBar(members.get(pos));
                         }
                     }
                 });
@@ -253,9 +254,48 @@ public class GroupActivity extends AppCompatActivity {
         memberList.setAdapter(firebaseRecyclerAdapter);
     }
 
-    private void removeMemberFromGroup(String memberId) {
-        // TODO remove user
-        showSnackBar("REMOVED");
+    private void removeMemberFromGroup(final String memberId) {
+        final DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                membersReference.child(memberId).child("memberOf").child(groupId).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        groupReference.child("members").child(memberId).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                showSnackBar("REMOVED");
+                            }
+                        });
+                    }
+                });
+                // TODO remove user
+            }
+        };
+
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
+                .setMessage("Do you want to remove member from group?")
+                .create();
+
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE,"YES", dialogClickListener);
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "NO", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+
+        alertDialog.show();
+
+        Button btnPositive = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        Button btnNegative = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+
+        LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) btnPositive.getLayoutParams();
+        layoutParams.leftMargin = 10;
+        layoutParams.rightMargin = 10;
+        btnPositive.setLayoutParams(layoutParams);
+        btnNegative.setLayoutParams(layoutParams);
     }
 
     public static class UsersViewHolder extends RecyclerView.ViewHolder {
