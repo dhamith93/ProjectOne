@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -88,6 +89,7 @@ public class GroupActivity extends AppCompatActivity {
         groupReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                members.clear();
                 groupName.setText(dataSnapshot.child("name").getValue().toString());
                 String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
                 for (DataSnapshot ds : dataSnapshot.child("members").getChildren())
@@ -202,8 +204,12 @@ public class GroupActivity extends AppCompatActivity {
                             memberReference.addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if (!dataSnapshot.exists()) {
+                                        removeMemberFromGroup(members.get(pos));
+                                        return;
+                                    }
                                     for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                                        String projectId = ds.getKey();
+                                        String projectId = ds.getRef().getKey();
                                         DatabaseReference projectReference = FirebaseDatabase
                                                 .getInstance()
                                                 .getReference()

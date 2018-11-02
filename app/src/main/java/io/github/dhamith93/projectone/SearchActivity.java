@@ -153,6 +153,8 @@ public class SearchActivity extends AppCompatActivity {
                                                     .child(uid)
                                                     .child(groupId);
 
+                                            notificationReference.keepSynced(true);
+
                                             notificationReference.addListenerForSingleValueEvent(new ValueEventListener() {
                                                 @Override
                                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
