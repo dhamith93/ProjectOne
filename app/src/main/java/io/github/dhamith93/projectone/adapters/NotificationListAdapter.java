@@ -69,24 +69,24 @@ public class NotificationListAdapter extends FirebaseRecyclerAdapter<Notificatio
                     @Override
                     public void onClick(View view) {
                         final String currentUId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
                         FirebaseDatabase
                                 .getInstance()
                                 .getReference()
-                                .child("notification")
+                                .child("notifications")
                                 .child(currentUId)
                                 .child(id)
-                                .child("seen").setValue("1");
-                        
+                                .removeValue();
+
                         if (type.equals("groupInvite")) {
-                            DatabaseReference projectsReference = FirebaseDatabase
+                             FirebaseDatabase
                                     .getInstance()
                                     .getReference()
                                     .child("groups")
                                     .child(groupId)
-                                    .child("members");
-                            HashMap<String, String> memberData = new HashMap<>();
-                            memberData.put(currentUId, "1");
-                            projectsReference.setValue(memberData);
+                                    .child("members")
+                                    .child(currentUId)
+                                    .setValue("1");
 
                             DatabaseReference userReference = FirebaseDatabase
                                     .getInstance()
@@ -111,9 +111,6 @@ public class NotificationListAdapter extends FirebaseRecyclerAdapter<Notificatio
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                     for (DataSnapshot ds : dataSnapshot.getChildren()) {
                                         String projectId = ds.getRef().getKey();
-
-                                        Log.e("exception", projectId);
-                                        Log.e("exception", ds.toString());
 
                                         DatabaseReference userUpdateReference = FirebaseDatabase
                                                 .getInstance()

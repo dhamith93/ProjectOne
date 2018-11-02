@@ -88,7 +88,6 @@ public class GroupActivity extends AppCompatActivity {
         groupReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                members.clear();
                 groupName.setText(dataSnapshot.child("name").getValue().toString());
                 String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
                 for (DataSnapshot ds : dataSnapshot.child("members").getChildren())

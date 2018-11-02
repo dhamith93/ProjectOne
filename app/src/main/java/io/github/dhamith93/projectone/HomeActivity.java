@@ -65,7 +65,7 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 selectedTabIndex = tab.getPosition();
-                if (selectedTabIndex == 1) {
+                if (selectedTabIndex == 0 || selectedTabIndex == 2) {
                     ((FloatingActionButton) findViewById(R.id.fab)).hide();
                 } else {
                     ((FloatingActionButton) findViewById(R.id.fab)).show();
@@ -127,13 +127,10 @@ public class HomeActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Class<?> cls = null;
                 switch (selectedTabIndex) {
-                    case 0:
+                    case 1:
                         cls = NewProjectActivity.class;
                         break;
-                    case 1:
-
-                        break;
-                    case 2:
+                    case 3:
                         cls = NewGroupActivity.class;
                         break;
                     default:

@@ -68,26 +68,22 @@ public class NewGroupActivity extends AppCompatActivity {
                                             HashMap<String, Object> memberDocInfo = new HashMap<>();
                                             memberDocInfo.put(newProjectId, "1");
 
-                                            memberReference.updateChildren(memberDocInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            memberReference.updateChildren(memberDocInfo);
+                                            DatabaseReference memberOfReference = FirebaseDatabase
+                                                    .getInstance()
+                                                    .getReference()
+                                                    .child("users")
+                                                    .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                                    .child("memberOf")
+                                                    .child(newProjectId);
+
+                                            HashMap<String, String> memberActiveInfo = new HashMap<>();
+                                            memberActiveInfo.put("active", "1");
+
+                                            memberOfReference.setValue(memberActiveInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
-                                                    DatabaseReference memberOfReference = FirebaseDatabase
-                                                            .getInstance()
-                                                            .getReference()
-                                                            .child("users")
-                                                            .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                                            .child("memberOf")
-                                                            .child(newProjectId);
-
-                                                    HashMap<String, String> memberActiveInfo = new HashMap<>();
-                                                    memberActiveInfo.put("active", "1");
-
-                                                    memberOfReference.setValue(memberActiveInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                        @Override
-                                                        public void onComplete(@NonNull Task<Void> task) {
-                                                            finish();
-                                                        }
-                                                    });
+                                                    finish();
                                                 }
                                             });
                                         }
