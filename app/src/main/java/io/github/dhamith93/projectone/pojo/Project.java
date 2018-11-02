@@ -1,4 +1,4 @@
-package io.github.dhamith93.projectone;
+package io.github.dhamith93.projectone.pojo;
 
 public class Project {
     private String active;

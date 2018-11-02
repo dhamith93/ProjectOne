@@ -1,11 +1,12 @@
-package io.github.dhamith93.projectone;
+package io.github.dhamith93.projectone.adapters;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+import io.github.dhamith93.projectone.fragments.*;
 
-class FractionsAdapter extends FragmentPagerAdapter {
-    public FractionsAdapter(FragmentManager fm) {
+public class FragmentsAdapter extends FragmentPagerAdapter {
+    public FragmentsAdapter(FragmentManager fm) {
         super(fm);
     }
 
@@ -13,13 +14,13 @@ class FractionsAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int i) {
         switch (i) {
             case 0:
-                return new ProjectsFragment();
+                return new NotificationFragment();
             case 1:
-                return new MyTasksFragment();
+                return new ProjectsFragment();
             case 2:
-                return new GroupsFragment();
+                return new MyTasksFragment();
             case 3:
-                return new ChatsFragment();
+                return new GroupsFragment();
             default:
                 return null;
         }
@@ -32,13 +33,13 @@ class FractionsAdapter extends FragmentPagerAdapter {
     public CharSequence getPageTitle(int i) {
         switch (i) {
             case 0:
-                return "PROJECTS";
+                return "NOTIFICATIONS";
             case 1:
-                return "MY TASKS";
+                return "PROJECTS";
             case 2:
-                return "GROUPS";
+                return "MY TASKS";
             case 3:
-                return "CHAT";
+                return "GROUPS";
             default:
                 return null;
         }

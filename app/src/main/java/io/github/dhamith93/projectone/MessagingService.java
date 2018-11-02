@@ -21,8 +21,6 @@ public class MessagingService extends FirebaseMessagingService {
     public void onNewToken(String s) {
         super.onNewToken(s);
         Log.d("TOKEN_KEY", s);
-
-//        sendRegistrationToServer(s);
     }
 
     @Override

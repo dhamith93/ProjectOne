@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import io.github.dhamith93.projectone.adapters.FragmentsAdapter;
 
 import android.util.Log;
 import android.view.Menu;
@@ -54,8 +55,8 @@ public class HomeActivity extends AppCompatActivity {
         projectArray = new JSONArray();
 
         ViewPager viewPager = findViewById(R.id.tab_pager);
-        FractionsAdapter fractionsAdapter = new FractionsAdapter(getSupportFragmentManager());
-        viewPager.setAdapter(fractionsAdapter);
+        FragmentsAdapter fragmentsAdapter = new FragmentsAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(fragmentsAdapter);
 
         TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);

@@ -1,4 +1,4 @@
-package io.github.dhamith93.projectone;
+package io.github.dhamith93.projectone.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,6 +8,9 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import io.github.dhamith93.projectone.pojo.Group;
+import io.github.dhamith93.projectone.GroupActivity;
+import io.github.dhamith93.projectone.R;
 
 import android.view.LayoutInflater;
 import android.view.View;

@@ -36,6 +36,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
+import io.github.dhamith93.projectone.pojo.User;
 
 public class SearchActivity extends AppCompatActivity {
     private String groupId;
@@ -164,6 +165,7 @@ public class SearchActivity extends AppCompatActivity {
                                                     notificationInfo.put("from", currentUId);
                                                     notificationInfo.put("type", "groupInvite");
                                                     notificationInfo.put("groupName", groupName);
+                                                    notificationInfo.put("groupId", groupId);
                                                     notificationInfo.put("seen", "0");
 
                                                     notificationReference.setValue(notificationInfo).addOnCompleteListener(new OnCompleteListener<Void>() {

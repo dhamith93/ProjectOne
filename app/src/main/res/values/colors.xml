@@ -9,5 +9,6 @@
     <color name="link_blue">#1553fc</color>
     <color name="google_blue">#3D6EF2</color>
     <color name="github_dark">#464646</color>
-    <color name="fragment_background">#ededed</color>
+    <color name="fragment_background">#eeeeee</color>
+    <color name="notification_background">#f5f5f5</color>
 </resources>
