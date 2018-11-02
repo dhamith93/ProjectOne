@@ -311,11 +311,29 @@ public class TaskActivity extends AppCompatActivity {
                         taskReference.setValue(taskInfo);
 
                         ((EditText) findViewById(R.id.taskMember)).setText(newMemberName);
+
                         if (FirebaseAuth.getInstance().getCurrentUser().getUid().equals(newMemberId)) {
                             checkBoxDone.setEnabled(true);
                         } else {
                             checkBoxDone.setEnabled(false);
                         }
+
+                        final DatabaseReference notificationReference = FirebaseDatabase
+                                .getInstance()
+                                .getReference()
+                                .child("notifications")
+                                .child(newMemberId)
+                                .child(taskId);
+
+                        HashMap<String, String> notificationInfo = new HashMap<>();
+                        notificationInfo.put("from", FirebaseAuth.getInstance().getCurrentUser().getUid());
+                        notificationInfo.put("type", "newTask");
+                        notificationInfo.put("groupName", "null");
+                        notificationInfo.put("groupId", groupId);
+                        notificationInfo.put("seen", "0");
+
+                        notificationReference.setValue(notificationInfo);
+
                         showSnackBar("Task assigned to " + newMemberName);
                     }
                 });

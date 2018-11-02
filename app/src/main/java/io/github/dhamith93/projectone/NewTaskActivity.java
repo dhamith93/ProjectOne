@@ -150,6 +150,23 @@ public class NewTaskActivity extends AppCompatActivity {
                                             taskInfo.put("projectId", projectId);
 
                                             taskReference.setValue(taskInfo);
+
+                                            final DatabaseReference notificationReference = FirebaseDatabase
+                                                    .getInstance()
+                                                    .getReference()
+                                                    .child("notifications")
+                                                    .child(selectedMemberId)
+                                                    .child(key);
+
+                                            HashMap<String, String> notificationInfo = new HashMap<>();
+                                            notificationInfo.put("from", FirebaseAuth.getInstance().getCurrentUser().getUid());
+                                            notificationInfo.put("type", "newTask");
+                                            notificationInfo.put("groupName", "null");
+                                            notificationInfo.put("groupId", groupId);
+                                            notificationInfo.put("seen", "0");
+
+                                            notificationReference.setValue(notificationInfo);
+
                                             finish();
                                         }
                                     }

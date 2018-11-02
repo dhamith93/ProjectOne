@@ -60,7 +60,7 @@ public class NotificationListAdapter extends FirebaseRecyclerAdapter<Notificatio
                     btnText = "Accept";
                     title = "Join my group '" + groupName + "'!";
                 } else if (type.equals("newTask")) {
-                    title = "New task assignment from " + groupName;
+                    title = "New task assignment from " + sender;
                 }
 
                 notificationViewHolder.setNotification(title, sender, btnText, url);
