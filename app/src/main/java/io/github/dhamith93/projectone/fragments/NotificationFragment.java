@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import de.hdodenhof.circleimageview.CircleImageView;
 import io.github.dhamith93.projectone.R;
 import io.github.dhamith93.projectone.adapters.NotificationListAdapter;
 import io.github.dhamith93.projectone.pojo.Notification;
@@ -16,13 +17,16 @@ import io.github.dhamith93.projectone.pojo.Notification;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.squareup.picasso.Picasso;
 
 
 /**
@@ -35,7 +39,6 @@ public class NotificationFragment extends Fragment {
 
     public NotificationFragment() {  }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -43,7 +46,9 @@ public class NotificationFragment extends Fragment {
 
         notificationList = view.findViewById(R.id.notificationList);
 
-        String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        String currentUid = currentUser.getUid();
 
         notificationReference = FirebaseDatabase
                 .getInstance()

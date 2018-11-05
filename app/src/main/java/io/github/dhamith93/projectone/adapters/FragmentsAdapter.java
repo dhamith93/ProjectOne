@@ -33,7 +33,7 @@ public class FragmentsAdapter extends FragmentPagerAdapter {
     public CharSequence getPageTitle(int i) {
         switch (i) {
             case 0:
-                return "ALERTS";
+                return "HOME";
             case 1:
                 return "PROJECTS";
             case 2:

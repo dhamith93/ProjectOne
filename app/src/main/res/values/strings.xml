@@ -1,7 +1,5 @@
 <resources>
     <string name="app_name">ProjectOne</string>
+    <string name="about_url">http://www.google.com</string>
     <string name="learn_more"><a href="https://www.google.com">Learn more about ProjectOne</a></string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

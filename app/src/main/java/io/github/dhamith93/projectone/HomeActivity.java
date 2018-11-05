@@ -24,6 +24,7 @@ import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import io.github.dhamith93.projectone.adapters.FragmentsAdapter;
+import io.github.dhamith93.projectone.fragments.BottomNavigationDrawerFragment;
 
 import android.util.Log;
 import android.view.Menu;
@@ -155,31 +156,10 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = new MenuInflater(this);
-        inflater.inflate(R.menu.bottom_appbar_menu, menu);
-        return true;
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_log_out) {
-            FirebaseAuth.getInstance().signOut();
-
-            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                    .requestIdToken(getString(R.string.google_client_id))
-                    .requestEmail()
-                    .build();
-
-            GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-
-            mGoogleSignInClient.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    startActivity(welcomeIntent);
-                }
-            });
-
+        if (item.getItemId() == android.R.id.home) {
+            BottomNavigationDrawerFragment drawerFragment = new BottomNavigationDrawerFragment();
+            drawerFragment.show(getSupportFragmentManager(), drawerFragment.getTag());
         }
 
         return true;
