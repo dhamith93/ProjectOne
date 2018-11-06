@@ -52,15 +52,19 @@ public class NotificationListAdapter extends FirebaseRecyclerAdapter<Notificatio
                 String url = dataSnapshot.child("profile_pic").getValue().toString();
                 final String type = notification.getType();
                 final String groupId = notification.getGroupId();
-                String groupName = notification.getGroupName();
+                String subject = notification.getSubject();
                 String title = "New Notification";
                 String btnText = "View Task";
 
                 if (type.equals("groupInvite")) {
                     btnText = "Accept";
-                    title = "Join my group '" + groupName + "'!";
+                    title = "Join my group '" + subject + "'!";
                 } else if (type.equals("newTask")) {
                     title = "New task assignment from " + sender;
+                } else if (type.equals("completedProject")) {
+                    title = "Project " + subject + " completed!";
+                    sender = "SYSTEM";
+                    btnText = "";
                 }
 
                 notificationViewHolder.setNotification(title, sender, btnText, url);
@@ -199,8 +203,16 @@ public class NotificationListAdapter extends FirebaseRecyclerAdapter<Notificatio
         public void setNotification(String title, String sender, String btnPositiveText, String url) {
             lblTitle.setText(title);
             lblSender.setText(sender);
-            btnPositive.setText(btnPositiveText);
-            Picasso.get().load(url).into(profilePic);
+            if (btnPositiveText.equals("")) {
+                btnPositive.setVisibility(View.INVISIBLE);
+            } else {
+                btnPositive.setText(btnPositiveText);
+            }
+            if (!sender.equals("SYSTEM")) {
+                Picasso.get().load(url).into(profilePic);
+            } else {
+                profilePic.setImageResource(R.drawable.admin);
+            }
         }
     }
 }

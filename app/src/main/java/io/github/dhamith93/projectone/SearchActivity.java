@@ -36,6 +36,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
+import io.github.dhamith93.projectone.notifier.Notifier;
 import io.github.dhamith93.projectone.pojo.User;
 
 public class SearchActivity extends AppCompatActivity {
@@ -163,23 +164,18 @@ public class SearchActivity extends AppCompatActivity {
                                                         return;
                                                     }
 
-                                                    HashMap<String, String> notificationInfo = new HashMap<>();
-                                                    notificationInfo.put("from", currentUId);
-                                                    notificationInfo.put("type", "groupInvite");
-                                                    notificationInfo.put("groupName", groupName);
-                                                    notificationInfo.put("groupId", groupId);
-                                                    notificationInfo.put("seen", "0");
+                                                    Notifier notifier = new Notifier(
+                                                            groupId,
+                                                            currentUId,
+                                                            uid,
+                                                            groupName,
+                                                            "groupInvite",
+                                                            groupId
+                                                    );
 
-                                                    notificationReference.setValue(notificationInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                        @Override
-                                                        public void onComplete(@NonNull Task<Void> task) {
-                                                            if (task.isSuccessful()) {
-                                                                showSnackBar("Invitation sent!");
-                                                            } else {
-                                                                showSnackBar("Error! Try again.");
-                                                            }
-                                                        }
-                                                    });
+                                                    notifier.send();
+
+                                                    showSnackBar("Invitation sent!");
 
                                                 }
 

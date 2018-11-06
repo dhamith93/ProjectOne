@@ -25,6 +25,7 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import io.github.dhamith93.projectone.notifier.Notifier;
 
 public class NewTaskActivity extends AppCompatActivity {
     private String projectId;
@@ -108,7 +109,7 @@ public class NewTaskActivity extends AppCompatActivity {
                                 .push()
                                 .getKey();
 
-                        DatabaseReference projectReference = FirebaseDatabase
+                        final DatabaseReference projectReference = FirebaseDatabase
                                 .getInstance()
                                 .getReference()
                                 .child("projects")
@@ -151,21 +152,46 @@ public class NewTaskActivity extends AppCompatActivity {
 
                                             taskReference.setValue(taskInfo);
 
-                                            final DatabaseReference notificationReference = FirebaseDatabase
+                                            Notifier notifier = new Notifier(
+                                                    key,
+                                                    FirebaseAuth.getInstance().getCurrentUser().getUid(),
+                                                    selectedMemberId,
+                                                    "",
+                                                    "newTask",
+                                                    groupId
+                                            );
+
+                                            notifier.send();
+
+                                            DatabaseReference tasksReference = FirebaseDatabase
                                                     .getInstance()
                                                     .getReference()
-                                                    .child("notifications")
-                                                    .child(selectedMemberId)
-                                                    .child(key);
+                                                    .child("projects")
+                                                    .child(projectId)
+                                                    .child("tasks");
 
-                                            HashMap<String, String> notificationInfo = new HashMap<>();
-                                            notificationInfo.put("from", FirebaseAuth.getInstance().getCurrentUser().getUid());
-                                            notificationInfo.put("type", "newTask");
-                                            notificationInfo.put("groupName", "null");
-                                            notificationInfo.put("groupId", groupId);
-                                            notificationInfo.put("seen", "0");
+                                            tasksReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                    int completedCount = 0;
 
-                                            notificationReference.setValue(notificationInfo);
+                                                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                                                        if (ds.child("status").getValue().toString().equals("completed"))
+                                                            completedCount += 1;
+                                                    }
+
+                                                    final int percentage = (int) (completedCount * 100.0) / (int) dataSnapshot.getChildrenCount();
+
+                                                    projectReference
+                                                            .getParent()
+                                                            .getParent()
+                                                            .child("progress")
+                                                            .setValue(String.valueOf(percentage));
+                                                }
+
+                                                @Override
+                                                public void onCancelled(@NonNull DatabaseError databaseError) { }
+                                            });
 
                                             finish();
                                         }

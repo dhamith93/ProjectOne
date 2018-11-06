@@ -3,17 +3,17 @@ package io.github.dhamith93.projectone.pojo;
 public class Notification {
     private String title;
     private String from;
-    private String groupName;
+    private String subject;
     private String groupId;
     private String seen;
     private String type;
 
     public Notification() { }
 
-    public Notification(String title, String from, String groupName, String groupId, String seen, String type) {
+    public Notification(String title, String from, String subject, String groupId, String seen, String type) {
         this.title = title;
         this.from = from;
-        this.groupName = groupName;
+        this.subject = subject;
         this.groupId = groupId;
         this.seen = seen;
         this.type = type;
@@ -35,12 +35,12 @@ public class Notification {
         this.seen = seen;
     }
 
-    public String getGroupName() {
-        return groupName;
+    public String getSubject() {
+        return subject;
     }
 
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
+    public void setSubject(String subject) {
+        this.subject = subject;
     }
 
     public String getFrom() {

@@ -22,6 +22,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.text.ParseException;
@@ -82,6 +83,8 @@ public class ProjectActivity extends AppCompatActivity {
 
         taskList = findViewById(R.id.tasksList);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager.setReverseLayout(true);
+        layoutManager.setStackFromEnd(true);
         taskList.setLayoutManager(layoutManager);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(
                 taskList.getContext(),
@@ -217,9 +220,11 @@ public class ProjectActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
+        Query taskQuery = tasksReference.orderByChild("status");
+
         FirebaseRecyclerOptions<SingleTask> options =
                 new FirebaseRecyclerOptions.Builder<SingleTask>()
-                        .setQuery(tasksReference, SingleTask.class)
+                        .setQuery(taskQuery, SingleTask.class)
                         .build();
 
         FirebaseRecyclerAdapter<SingleTask, TasksViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<SingleTask, TasksViewHolder>(options) {

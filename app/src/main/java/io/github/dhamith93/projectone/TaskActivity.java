@@ -25,6 +25,7 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import io.github.dhamith93.projectone.notifier.Notifier;
 
 public class TaskActivity extends AppCompatActivity {
     private String projectId;
@@ -206,9 +207,34 @@ public class TaskActivity extends AppCompatActivity {
                                         completedCount += 1;
                                 }
 
-                                int percentage = (int) (completedCount * 100.0) / (int) dataSnapshot.getChildrenCount();
+                                final int percentage = (int) (completedCount * 100.0) / (int) dataSnapshot.getChildrenCount();
 
                                 projectReference.child("progress").setValue(String.valueOf(percentage));
+
+                                projectReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        String projectOwner = dataSnapshot.child("owner").getValue().toString();
+                                        String projectName = dataSnapshot.child("name").getValue().toString();
+
+                                        if (percentage >= 100) {
+                                            Notifier notifier = new Notifier(
+                                                    projectId,
+                                                    projectOwner,
+                                                    projectOwner,
+                                                    projectName,
+                                                    "completedProject",
+                                                    groupId
+                                            );
+
+                                            notifier.send();
+                                        }
+
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) { }
+                                });
                             }
 
                             @Override
@@ -318,21 +344,16 @@ public class TaskActivity extends AppCompatActivity {
                             checkBoxDone.setEnabled(false);
                         }
 
-                        final DatabaseReference notificationReference = FirebaseDatabase
-                                .getInstance()
-                                .getReference()
-                                .child("notifications")
-                                .child(newMemberId)
-                                .child(taskId);
+                        Notifier notifier = new Notifier(
+                                taskId,
+                                FirebaseAuth.getInstance().getCurrentUser().getUid(),
+                                newMemberId,
+                                "",
+                                "newTask",
+                                groupId
+                        );
 
-                        HashMap<String, String> notificationInfo = new HashMap<>();
-                        notificationInfo.put("from", FirebaseAuth.getInstance().getCurrentUser().getUid());
-                        notificationInfo.put("type", "newTask");
-                        notificationInfo.put("groupName", "null");
-                        notificationInfo.put("groupId", groupId);
-                        notificationInfo.put("seen", "0");
-
-                        notificationReference.setValue(notificationInfo);
+                        notifier.send();
 
                         showSnackBar("Task assigned to " + newMemberName);
                     }
