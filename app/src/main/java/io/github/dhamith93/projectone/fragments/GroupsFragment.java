@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import io.github.dhamith93.projectone.ChatActivity;
 import io.github.dhamith93.projectone.pojo.Group;
 import io.github.dhamith93.projectone.GroupActivity;
 import io.github.dhamith93.projectone.R;
@@ -15,6 +16,7 @@ import io.github.dhamith93.projectone.R;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -87,20 +89,32 @@ public class GroupsFragment extends Fragment {
                 groupsReference.child(groupId).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        groupsViewHolder.setGroupName(dataSnapshot.child("name").getValue().toString());
+                        final String groupName = dataSnapshot.child("name").getValue().toString();
+
+                        groupsViewHolder.setGroupName(groupName);
+
+                        groupsViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                Intent groupIntent = new Intent(view.getRootView().getContext(), GroupActivity.class);
+                                groupIntent.putExtra("groupId", groupId);
+                                view.getRootView().getContext().startActivity(groupIntent);
+                            }
+                        });
+
+                        groupsViewHolder.btnOpenChat.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                Intent chatIntent = new Intent(view.getRootView().getContext(), ChatActivity.class);
+                                chatIntent.putExtra("groupId", groupId);
+                                chatIntent.putExtra("groupName", groupName);
+                                view.getRootView().getContext().startActivity(chatIntent);
+                            }
+                        });
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError databaseError) { }
-                });
-
-                groupsViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Intent groupIntent = new Intent(view.getRootView().getContext(), GroupActivity.class);
-                        groupIntent.putExtra("groupId", groupId);
-                        view.getRootView().getContext().startActivity(groupIntent);
-                    }
                 });
             }
 
@@ -118,10 +132,12 @@ public class GroupsFragment extends Fragment {
 
     public static class GroupsViewHolder extends RecyclerView.ViewHolder {
         View view;
+        Button btnOpenChat;
 
         public GroupsViewHolder(@NonNull View itemView) {
             super(itemView);
             view = itemView;
+            btnOpenChat = view.findViewById(R.id.btnOpenChat);
         }
 
         public void setGroupName(String groupName) {
