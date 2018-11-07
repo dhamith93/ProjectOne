@@ -73,7 +73,8 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             if (position != 0) {
                 Message prevMessage = messageList.get(position - 1);
 
-                if (message.getTimeStamp() - prevMessage.getTimeStamp() < 60000) {
+                if (prevMessage.getFrom().equals(message.getFrom())
+                    && message.getTimeStamp() - prevMessage.getTimeStamp() < 60000) {
                     holder.sentTime.setVisibility(View.GONE);
                 } else {
                     holder.sentTime.setVisibility(View.VISIBLE);
@@ -106,12 +107,11 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
                     if (message.getTimeStamp() - prevMessage.getTimeStamp() < 60000) {
                         holder.sentTime.setVisibility(View.GONE);
-                    } else {
-                        holder.sentTime.setVisibility(View.VISIBLE);
                     }
                 } else {
                     holder.profilePic.setVisibility(View.VISIBLE);
                     holder.senderName.setVisibility(View.VISIBLE);
+                    holder.sentTime.setVisibility(View.VISIBLE);
                 }
             }
         }
