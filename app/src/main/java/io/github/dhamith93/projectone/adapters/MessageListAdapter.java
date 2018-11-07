@@ -70,6 +70,15 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
         if (holder.getItemViewType() == 0) {
             holder.setAsFromUser();
+            if (position != 0) {
+                Message prevMessage = messageList.get(position - 1);
+
+                if (message.getTimeStamp() - prevMessage.getTimeStamp() < 60000) {
+                    holder.sentTime.setVisibility(View.GONE);
+                } else {
+                    holder.sentTime.setVisibility(View.VISIBLE);
+                }
+            }
         } else {
             holder.setAsIncoming();
 
@@ -87,6 +96,24 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) { }
             });
+
+            if (position != 0) {
+                Message prevMessage = messageList.get(position - 1);
+
+                if (prevMessage.getFrom().equals(message.getFrom())) {
+                    holder.profilePic.setVisibility(View.INVISIBLE);
+                    holder.senderName.setVisibility(View.GONE);
+
+                    if (message.getTimeStamp() - prevMessage.getTimeStamp() < 60000) {
+                        holder.sentTime.setVisibility(View.GONE);
+                    } else {
+                        holder.sentTime.setVisibility(View.VISIBLE);
+                    }
+                } else {
+                    holder.profilePic.setVisibility(View.VISIBLE);
+                    holder.senderName.setVisibility(View.VISIBLE);
+                }
+            }
         }
 
         holder.messageText.setText(message.getMessage());

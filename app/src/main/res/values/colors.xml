@@ -11,4 +11,5 @@
     <color name="github_dark">#464646</color>
     <color name="fragment_background">#eeeeee</color>
     <color name="notification_background">#f5f5f5</color>
+    <color name="chat_color">#4b5bb1</color>
 </resources>
