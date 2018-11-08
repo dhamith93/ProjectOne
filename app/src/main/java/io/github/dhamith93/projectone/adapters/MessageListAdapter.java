@@ -1,22 +1,24 @@
 package io.github.dhamith93.projectone.adapters;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
+import com.volokh.danylo.hashtaghelper.HashTagHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -26,15 +28,21 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
 import io.github.dhamith93.projectone.R;
+import io.github.dhamith93.projectone.TaskActivity;
 import io.github.dhamith93.projectone.pojo.Message;
 
 public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.MessageViewHolder>{
     private List<Message> messageList;
     private FirebaseUser currentUser;
+    private String groupId;
 
     public MessageListAdapter(List<Message> messageList) {
         this.messageList = messageList;
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 
     @Override
@@ -118,6 +126,51 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
         holder.messageText.setText(message.getMessage());
         holder.sentTime.setText(timeStamp);
+
+        HashTagHelper hashTagHelper = HashTagHelper.Creator.create(Color.parseColor("#48C9B0"), new HashTagHelper.OnHashTagClickListener() {
+            @Override
+            public void onHashTagClicked(String hashTag) {
+                String[] ids = hashTag.split("_"); // projectId_taskId
+                openTaskActivity(ids[0], ids[1], holder.itemView.getContext());
+            }
+        }, '_', '-');
+
+        hashTagHelper.handle(holder.messageText);
+    }
+
+    private void openTaskActivity(final String projectId, final String taskId, final Context context) {
+        DatabaseReference projectReferene = FirebaseDatabase
+                .getInstance()
+                .getReference()
+                .child("projects")
+                .child(projectId)
+                .child("tasks")
+                .child(taskId);
+
+        projectReferene.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    String memberId = dataSnapshot.child("member").getValue().toString();
+
+                    Intent taskIntent = new Intent(context, TaskActivity.class);
+                    taskIntent.putExtra("projectId", projectId);
+                    taskIntent.putExtra("taskId", taskId);
+                    taskIntent.putExtra("groupId", groupId);
+                    taskIntent.putExtra("memberId", memberId);
+                    if (currentUser.getUid().equals(memberId))
+                        taskIntent.putExtra("fromMyTask", "1");
+                    context.startActivity(taskIntent);
+                } else {
+                    Toast.makeText(context, "Invalid project_task id!", Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        });
+
+
 
     }
 

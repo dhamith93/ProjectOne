@@ -280,7 +280,28 @@ public class TaskActivity extends AppCompatActivity {
         (findViewById(R.id.btnTaskChat)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO start chat
+                DatabaseReference groupReference = FirebaseDatabase
+                        .getInstance()
+                        .getReference()
+                        .child("groups")
+                        .child(groupId);
+
+                groupReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        String groupName = dataSnapshot.child("name").getValue().toString();
+
+                        Intent chatIntent = new Intent(TaskActivity.this, ChatActivity.class);
+                        chatIntent.putExtra("groupId", groupId);
+                        chatIntent.putExtra("groupName", groupName);
+                        chatIntent.putExtra("projectId", projectId);
+                        chatIntent.putExtra("taskId", taskId);
+                        startActivity(chatIntent);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) { }
+                });
             }
         });
     }

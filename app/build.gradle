@@ -37,4 +37,5 @@ dependencies {
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'com.google.firebase:firebase-messaging:17.3.4'
     implementation 'com.android.support:customtabs:28.0.0'
+    implementation 'com.github.danylovolokh:hashtag-helper:1.1.0'
 }

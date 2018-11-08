@@ -40,6 +40,7 @@ public class ChatActivity extends AppCompatActivity {
     private String groupId;
     private String groupName;
     private String taskId;
+    private String projectId;
     private String lastLoadedKey = "";
     private String prevLoadedKey = "";
 
@@ -66,8 +67,11 @@ public class ChatActivity extends AppCompatActivity {
 
         groupId = getIntent().getStringExtra("groupId");
         groupName = getIntent().getStringExtra("groupName");
+        taskId = getIntent().getStringExtra("taskId");
+        projectId = getIntent().getStringExtra("projectId");
 
         messageAdapter = new MessageListAdapter(messages);
+        messageAdapter.setGroupId(groupId);
 
         toolbar = findViewById(R.id.chatAppBar);
         btnSend = findViewById(R.id.btnSend);
@@ -114,6 +118,10 @@ public class ChatActivity extends AppCompatActivity {
                 loadOldMessages();
             }
         });
+
+        if (taskId != null && projectId != null)
+            txtMsg.setText("#" + projectId + "_" + taskId + " ");
+
     }
 
     private void sendMessage(String messageText) {
