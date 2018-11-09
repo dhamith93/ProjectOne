@@ -48,7 +48,13 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
     @Override
     public int getItemViewType(int position) {
         Message message = messageList.get(position);
-        return (message.getFrom().equals(currentUser.getUid())) ? 0 : 1;
+        if (message.getFrom().equals(currentUser.getUid()))
+            return 0;
+
+        if (message.getFrom().equals("ReplyBot"))
+            return 2;
+
+        return 1;
     }
 
     @Override
@@ -61,6 +67,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                         .inflate(R.layout.single_user_message_layout, parent, false);
                 break;
             case 1:
+            case 2:
                 view = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.single_message_layout, parent, false);
                 break;
@@ -91,20 +98,25 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         } else {
             holder.setAsIncoming();
 
-            FirebaseDatabase
-                    .getInstance()
-                    .getReference()
-                    .child("users")
-                    .child(message.getFrom()).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    holder.senderName.setText(dataSnapshot.child("name").getValue().toString());
-                    Picasso.get().load(dataSnapshot.child("profile_pic").getValue().toString()).into(holder.profilePic);
-                }
+            if (holder.getItemViewType() == 2) {
+                holder.senderName.setText(message.getFrom());
+                holder.profilePic.setImageResource(R.drawable.admin);
+            } else {
+                FirebaseDatabase
+                        .getInstance()
+                        .getReference()
+                        .child("users")
+                        .child(message.getFrom()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        holder.senderName.setText(dataSnapshot.child("name").getValue().toString());
+                        Picasso.get().load(dataSnapshot.child("profile_pic").getValue().toString()).into(holder.profilePic);
+                    }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) { }
-            });
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) { }
+                });
+            }
 
             if (position != 0) {
                 Message prevMessage = messageList.get(position - 1);
