@@ -44,8 +44,6 @@ public class ChatActivity extends AppCompatActivity {
     private String lastLoadedKey = "";
     private String prevLoadedKey = "";
 
-
-    private Toolbar toolbar;
     private ImageButton btnSend;
     private EditText txtMsg;
     private RecyclerView messageList;
@@ -73,7 +71,6 @@ public class ChatActivity extends AppCompatActivity {
         messageAdapter = new MessageListAdapter(messages);
         messageAdapter.setGroupId(groupId);
 
-        toolbar = findViewById(R.id.chatAppBar);
         btnSend = findViewById(R.id.btnSend);
         txtMsg = findViewById(R.id.txtMsg);
         messageList = findViewById(R.id.messageList);
@@ -87,7 +84,6 @@ public class ChatActivity extends AppCompatActivity {
 
         messageList.setAdapter(messageAdapter);
 
-        setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle(groupName);
 

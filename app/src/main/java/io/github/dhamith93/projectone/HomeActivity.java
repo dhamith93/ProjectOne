@@ -1,6 +1,7 @@
 package io.github.dhamith93.projectone;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -9,6 +10,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
@@ -18,25 +20,26 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
+import de.hdodenhof.circleimageview.CircleImageView;
 import io.github.dhamith93.projectone.adapters.FragmentsAdapter;
-import io.github.dhamith93.projectone.fragments.BottomNavigationDrawerFragment;
 
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class HomeActivity extends AppCompatActivity {
-
     private int selectedTabIndex;
     private Intent welcomeIntent;
 
@@ -47,13 +50,60 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-        setSupportActionBar((Toolbar) findViewById(R.id.bottom_app_bar));
 
         welcomeIntent = new Intent(HomeActivity.this, WelcomeActivity.class);
         welcomeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
         selectedTabIndex = 0;
         projectArray = new JSONArray();
+
+        DrawerLayout drawerLayout = findViewById(R.id.drawerLayout);
+        ActionBarDrawerToggle drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.open, R.string.close);
+
+        drawerLayout.addDrawerListener(drawerToggle);
+        drawerToggle.syncState();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        NavigationView navigationView = findViewById(R.id.side_nav);
+        View headerView = navigationView.getHeaderView(0);
+
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+
+                switch (menuItem.getItemId()) {
+                    case R.id.action_about:
+                        CustomTabsIntent customTabsIntent = new CustomTabsIntent.Builder().build();
+                        customTabsIntent.launchUrl(HomeActivity.this, Uri.parse(getString(R.string.about_url)));
+                        break;
+                    case R.id.action_log_out:
+                        FirebaseAuth.getInstance().signOut();
+
+                        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                .requestIdToken(getString(R.string.google_client_id))
+                                .requestEmail()
+                                .build();
+
+                        GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(HomeActivity.this, gso);
+
+                        mGoogleSignInClient.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                Intent welcomeIntent = new Intent(HomeActivity.this, WelcomeActivity.class);
+                                startActivity(welcomeIntent);
+                            }
+                        });
+                        break;
+                }
+                return false;
+            }
+        });
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        ((TextView) headerView.findViewById(R.id.headerName)).setText(currentUser.getDisplayName());
+
+        Picasso.get().load(currentUser.getPhotoUrl()).into((CircleImageView) headerView.findViewById(R.id.header_profile_pic));
 
         ViewPager viewPager = findViewById(R.id.tab_pager);
         FragmentsAdapter fragmentsAdapter = new FragmentsAdapter(getSupportFragmentManager());
@@ -108,9 +158,7 @@ public class HomeActivity extends AppCompatActivity {
                         }
 
                         @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                        }
+                        public void onCancelled(@NonNull DatabaseError databaseError) { }
                     });
                 }
             }
@@ -155,15 +203,16 @@ public class HomeActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            BottomNavigationDrawerFragment drawerFragment = new BottomNavigationDrawerFragment();
-            drawerFragment.show(getSupportFragmentManager(), drawerFragment.getTag());
-        }
-
-        return true;
-    }
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        if (item.getItemId() == android.R.id.home) {
+//
+//        }
+//
+//        showSnackBar(String.valueOf(item.getItemId()));
+//
+//        return true;
+//    }
 
     private void showSnackBar(String msg) {
         Snackbar.make(
